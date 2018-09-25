@@ -1,0 +1,19 @@
+{
+  "name": "hyperoids",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html"
+  },
+  "devDependencies": {
+    "autoprefixer": "9.1.1",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-plugin-transform-react-jsx": "6.24.1",
+    "classcat": "3.1.2",
+    "postcss-modules": "1.3.2",
+    "parcel-bundler": "^1.6.1"
+  },
+  "keywords": []
+}
