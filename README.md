@@ -1,2 +1,2 @@
 # hyperoids
-Asteroids clone with hyperapp and canvas
+WIP Asteroids clone with hyperapp and canvas
