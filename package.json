@@ -2,6 +2,7 @@
   "name": "hyperoids",
   "version": "1.0.0",
   "description": "",
+  "license": "MIT",
   "main": "index.html",
   "scripts": {
     "start": "parcel index.html --open",
