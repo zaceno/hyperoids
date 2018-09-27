@@ -1,8 +1,4 @@
-import { h } from './hyperappv2'
-import { Canvas, Fill, Scale } from './canvas'
-
-const WIDTH = 1500
-const HEIGHT = 1500
+import { SPACE_WIDTH, SPACE_HEIGHT } from './const'
 
 const mod = (x, n) => {
     let y = x
@@ -12,16 +8,13 @@ const mod = (x, n) => {
     return y % n
 }
 
-const modx = x => mod(x, WIDTH)
-const mody = x => mod(x, HEIGHT)
+//the smallest diff between a and b in a cyclic range
+const moddiff = (a, b, n) => mod(a - b + n / 2, n) - n / 2
 
-const Space = (props, children) => (
-    <Canvas>
-        <Fill color="#000" />
-        <Scale width={WIDTH} height={HEIGHT}>
-            {children}
-        </Scale>
-    </Canvas>
-)
-
-export { Space, modx, mody }
+export const toroid = (x, y) => [mod(x, SPACE_WIDTH), mod(y, SPACE_HEIGHT)]
+//calculate distance vector between two points A and B,
+//taking into account the modulo-nature of the space.
+export const dist = (ax, ay, bx, by) => [
+    moddiff(ax, bx, SPACE_WIDTH),
+    moddiff(ay, by, SPACE_HEIGHT),
+]
