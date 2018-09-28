@@ -4,7 +4,7 @@ import KeySub from './lib/hyperapp/subs/key'
 import FrameSub from './lib/hyperapp/subs/frame'
 import { Space, Shot, Ship, Rock } from './components'
 import { SPACE_HEIGHT, SPACE_WIDTH } from './const'
-import { bounceObjects, step } from './physics'
+import { bounceObjects, step, blastTargets } from './physics'
 import { make as makeRock } from './rock'
 import { step as stepShot } from './shot'
 import {
@@ -39,11 +39,16 @@ const Tick = (state, time) => {
 
     ship = step(ship, dt)
 
-    if (!!shot) shot = stepShot(shot, dt)
-    else if (key === ' ') shot = shoot(ship)
-
     rocks = state.rocks.map(rock => step(rock, dt))
     ;[ship, ...rocks] = bounceObjects([ship, ...rocks])
+
+    if (!!shot) shot = stepShot(shot, dt)
+    if (!!shot && !shot.spent) {
+        let [nshot, nrocks] = blastTargets(shot, shot.angle, rocks)
+        rocks = nrocks
+        if (!nshot) shot.spent = true
+    }
+    if (!shot && key === ' ') shot = shoot(ship)
 
     return {
         key,
@@ -62,16 +67,7 @@ app({
         time: performance.now(),
         ship: makeShip(),
         shot: null,
-        rocks: [
-            makeRock(),
-            makeRock(),
-            makeRock(),
-            makeRock(),
-            makeRock(),
-            makeRock(),
-            makeRock(),
-            makeRock(),
-        ],
+        rocks: [makeRock(), makeRock(), makeRock()],
     }),
 
     subscriptions: state => [
@@ -85,13 +81,14 @@ app({
                 {state.rocks.map(rock => (
                     <Rock x={rock.x} y={rock.y} r={rock.r} />
                 ))}
-                {state.shot && (
-                    <Shot
-                        x={state.shot.x}
-                        y={state.shot.y}
-                        angle={state.shot.angle}
-                    />
-                )}
+                {state.shot &&
+                    !state.shot.spent && (
+                        <Shot
+                            x={state.shot.x}
+                            y={state.shot.y}
+                            angle={state.shot.angle}
+                        />
+                    )}
                 <Ship
                     x={state.ship.x}
                     y={state.ship.y}
