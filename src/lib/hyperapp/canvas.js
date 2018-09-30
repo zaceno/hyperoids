@@ -115,7 +115,10 @@ const Canvas = (props, children) => {
         const ctx = el.getContext('2d')
         draw(children, ctx, width, height)
     }
-    return h('canvas', { key: 'thecanvas', onCreate: redraw, onUpdate: redraw })
+    const props2 = { onCreate: redraw, onUpdate: redraw }
+    if (props.class) props2.class = props.class
+    if (props.key) props2.key = props.key
+    return h('canvas', props2)
 }
 
 export {

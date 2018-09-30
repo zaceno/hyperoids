@@ -1,8 +1,21 @@
-body {
+body, main {
     margin :0;
+    padding: 0;
 }
 
-canvas {
-    width: 1200px;
-    height: 720px;
+
+.gameCanvas {
+    width: 1000px;
+    height: 600px;
+}
+
+.score {
+    position: absolute;
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 32px;
+    font-family: monospace;
+    color: rgba(255,255,255, 0.3);
+    top: -20px;
+    left: 10px;
 }

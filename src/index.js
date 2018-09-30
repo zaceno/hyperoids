@@ -1,4 +1,4 @@
-import './style.css'
+import css from './style.css'
 import { h, app } from './lib/hyperapp/hyperappv2'
 import KeySub from './lib/hyperapp/subs/key'
 import FrameSub from './lib/hyperapp/subs/frame'
@@ -26,6 +26,8 @@ const Tick = (state, time) => {
     let shot = state.shot
     let rocks = state.rocks
     let accelerating = false
+    let shotsSinceHit = state.shotsSinceHit
+    let score = state.score
 
     if (key === 'ArrowLeft') ship = rotateLeft(ship, dt)
     if (key === 'ArrowRight') ship = rotateRight(ship, dt)
@@ -46,11 +48,20 @@ const Tick = (state, time) => {
     if (!!shot && !shot.spent) {
         let [nshot, nrocks] = blastTargets(shot, shot.angle, rocks)
         rocks = nrocks
-        if (!nshot) shot.spent = true
+        if (!nshot) {
+            shot.spent = true
+            score += !shotsSinceHit ? 100 : Math.round(100 / shotsSinceHit)
+            shotsSinceHit = 0
+        }
     }
-    if (!shot && key === ' ') shot = shoot(ship)
+    if (!shot && key === ' ') {
+        shot = shoot(ship)
+        shotsSinceHit += 1
+    }
 
     return {
+        score,
+        shotsSinceHit,
         key,
         accelerating,
         time,
@@ -63,6 +74,8 @@ const Tick = (state, time) => {
 document.body.innerHTML = ''
 app({
     init: _ => ({
+        score: 0,
+        shotsSinceHit: 0,
         accelerating: false,
         time: performance.now(),
         ship: makeShip(),
@@ -77,6 +90,7 @@ app({
 
     view: state => (
         <main>
+            <p class={css.score}>Score: {state.score}</p>
             <Space width={SPACE_WIDTH} height={SPACE_HEIGHT}>
                 {state.rocks.map(rock => (
                     <Rock x={rock.x} y={rock.y} r={rock.r} />
