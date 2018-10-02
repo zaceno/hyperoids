@@ -15,8 +15,29 @@ import {
     accelerate,
 } from './ship'
 
-const KeyDown = (S, K) => ({ ...S, key: K })
-const KeyUp = (S, K) => (K === S.key ? { ...S, key: null } : S)
+const KeyDown = (state, key) => {
+    const news = { ...state }
+    if (key === 'ArrowLeft' && !state.rotatingRight) {
+        news.rotatingLeft = true
+        news.rotatingRight = false
+    } else if (key === 'ArrowRight') {
+        news.rotatingRight = true
+        news.rotatingLeft = false
+    } else if (key === 'ArrowUp') {
+        news.accelerating = true
+    } else if (key === ' ') {
+        news.shooting = true
+    }
+    return news
+}
+const KeyUp = (state, key) => {
+    const news = { ...state }
+    if (key === 'ArrowLeft') news.rotatingLeft = false
+    else if (key === 'ArrowRight') news.rotatingRight = false
+    else if (key === 'ArrowUp') news.accelerating = false
+    else if (key === ' ') news.shooting = false
+    return news
+}
 
 const Tick = (state, time) => {
     const dt = time - state.time
@@ -29,16 +50,9 @@ const Tick = (state, time) => {
     let shotsSinceHit = state.shotsSinceHit
     let score = state.score
 
-    if (key === 'ArrowLeft') ship = rotateLeft(ship, dt)
-    if (key === 'ArrowRight') ship = rotateRight(ship, dt)
-
-    if (key === 'ArrowUp') {
-        ship = accelerate(ship, dt)
-        accelerating = true
-    } else {
-        accelerating = false
-    }
-
+    if (state.rotatingLeft) ship = rotateLeft(ship, dt)
+    if (state.rotatingRight) ship = rotateRight(ship, dt)
+    if (state.accelerating) ship = accelerate(ship, dt)
     ship = step(ship, dt)
 
     rocks = state.rocks.map(rock => step(rock, dt))
@@ -54,16 +68,16 @@ const Tick = (state, time) => {
             shotsSinceHit = 0
         }
     }
-    if (!shot && key === ' ') {
+    if (!shot && state.shooting) {
         shot = shoot(ship)
         shotsSinceHit += 1
     }
 
     return {
+        ...state,
         score,
         shotsSinceHit,
         key,
-        accelerating,
         time,
         ship,
         shot,
@@ -77,6 +91,9 @@ app({
         score: 0,
         shotsSinceHit: 0,
         accelerating: false,
+        shooting: false,
+        rotatingLeft: false,
+        rotatingRight: false,
         time: performance.now(),
         ship: makeShip(),
         shot: null,
