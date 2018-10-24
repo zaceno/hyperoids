@@ -1,11 +1,14 @@
 import { h } from './hyperappv2'
 
 const wrapCoord = (full, coord = 0) => (coord < 0 ? full + coord : coord)
+
 const relCoord = (full, coord = 0) =>
     Math.abs(coord) <= 1 ? full * coord : coord
+
 const wrapRelCoord = (full, coord) => wrapCoord(full, relCoord(full, coord))
 
 const cvc = draw => h('', { draw })
+
 const draw = (ch, ctx, w, h) =>
     ch
         .filter(c => !!c.props)
@@ -19,7 +22,9 @@ const transform = (children, f) =>
         draw(children, ctx, w, h)
         ctx.restore()
     })
+
 const Transform = (props, children) => transform(children, props.f)
+
 const Rotate = (props, children) =>
     transform(children, (ctx, width, height) => {
         ctx.rotate(props.angle || 0)
@@ -86,11 +91,15 @@ const Path = (props, children) =>
     })
 
 const Move = ({ x = 0, y = 0 }) => cvc(ctx => ctx.moveTo(x, y))
+
 const Line = ({ x = 0, y = 0 }) => cvc(ctx => ctx.lineTo(x, y))
+
 const Arc = ({ x = 0, y = 0, radius = 0, start = 0, end = 0, anti = false }) =>
     cvc(ctx => ctx.arc(x, y, radius, start, end, anti))
+
 const Bezier = ({ ax = 0, ay = 0, bx = 0, by = 0, x = 0, y = 0 }) =>
     cvc(ctx => ctx.bezierTo(ax, ay, bx, by, x, y))
+
 const Ellipse = ({
     x = 0,
     y = 0,
@@ -102,23 +111,32 @@ const Ellipse = ({
     anti = 0,
 }) => cvc(ctx => ctx.ellipse(x, y, rx, ry, rot, start, end, anti))
 
-const Canvas = (props, children) => {
-    const redraw = el => {
-        let { width, height } = props
-        if (!width || !height) {
-            const rect = el.getBoundingClientRect()
-            el.width = rect.width
-            el.height = rect.height
-            width = rect.width
-            height = rect.height
-        }
-        const ctx = el.getContext('2d')
-        draw(children, ctx, width, height)
+const canvasElems = {}
+const renderCanvas = (key, props, children) => {
+    if (!canvasElems[key]) {
+        return setTimeout(_ => {
+            const el = document.body.querySelector(`[data-canvas-key=${key}]`)
+            canvasElems[key] = el
+            renderCanvas(key, props, children)
+        }, 0)
     }
-    const props2 = { onCreate: redraw, onUpdate: redraw }
-    if (props.class) props2.class = props.class
-    if (props.key) props2.key = props.key
-    return h('canvas', props2)
+    const el = canvasElems[key]
+    let { width, height } = props
+    if (!width || !height) {
+        const rect = el.getBoundingClientRect()
+        el.width = rect.width
+        el.height = rect.height
+        width = rect.width
+        height = rect.height
+    }
+    const ctx = el.getContext('2d')
+    draw(children, ctx, width, height)
+}
+
+const Canvas = (props, children) => {
+    const key = props.key || 'thecanvas'
+    renderCanvas(key, props, children)
+    return h('canvas', { key, 'data-canvas-key': key, class: props.class })
 }
 
 export {
